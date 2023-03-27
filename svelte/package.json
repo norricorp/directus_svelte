@@ -1,0 +1,26 @@
+{
+  "name": "directus-svelte-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --outDir public",
+    "preview": "vite preview",
+    "cypress:open": "cypress open",
+    "deploy": "node ./gh-pages.js"
+  },
+  "dependencies": {
+    "@directus/sdk": "^9.12.2",
+    "gh-pages": "^4.0.0",
+    "modern-normalize": "^1.1.0",
+    "svelte-navigator": "^3.1.6"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "1.0.0-next.49",
+    "cypress": "^12.3.0",
+    "svelte": "^3.49.0",
+    "svelte-paginate": "^0.1.0",
+    "svelte-time": "^0.7.1",
+    "vite": "^2.9.13"
+  }
+}
