@@ -10,11 +10,11 @@
   import LoginModal from "./LoginModal.svelte";
    // @ts-ignore
   import RegisterModal from "./RegisterModal.svelte"; 
-  import ResetPWModal from "./ResetPWModal.svelte";
+  import ChangePWModal from "./ChangePWModal.svelte";
 
 	let showPopupLogin = false;
 	let showPopupRegister = false;
-//	let showPopupResetPW = false;
+	let showPopUpChangePW = false;
 
 	function onShowPopup(popup) {
 		switch (popup) {
@@ -24,9 +24,9 @@
 		case 2:
 			showPopupRegister = true;
 			break;
-/* 		case 3:
-			showPopupResetPW = true;
-			break; */
+		case 3:
+			showPopUpChangePW = true;
+			break;
 		default:
 			console.log("Something gone wrong with popup open selection " + popup);
 		}
@@ -40,9 +40,9 @@
 		case 2:
 			showPopupRegister = false;
 			break;
-/* 		case 3:
-			showPopupResetPW = false;
-			break; */
+ 		case 3:
+			showPopUpChangePW = false;
+			break; 
 	default:
 			console.log("Something gone wrong with popup close selection " + popup);
 		}
@@ -66,10 +66,8 @@
 
 	async function setResetPassword() {
 		console.log("entered reset password. " );
-		console.log("the current url is " + import.meta.env.VITE_DIRECTUS_URL )
-		// await directus.auth.password.request($emailName,  "http://localhost:3000/resetpw");
+		console.log("the destination url is " + import.meta.env.VITE_SVELTE_URL )
 		await directus.auth.password.request($emailName, import.meta.env.VITE_SVELTE_URL + "/resetpw");
-		// await directus.auth.password.request($emailName);
 		window.alert('Email to reset your password sent to ' + $emailName);
 	}
 
@@ -80,9 +78,6 @@
 <header>
    <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	<div class="container-fluid">
-<!--	  <a class="navbar-brand" href="/">
-		<img src={getAssetURL("c74ca5e0-b8c9-491f-b25a-e299bea8fd8a")} alt="Wolfsberg Group" style="width:90;height:60px;">
-	  </a> -->
 	  <Link to={`/`} class="nav-link"> 
 		<img src={getAssetURL("c74ca5e0-b8c9-491f-b25a-e299bea8fd8a")} alt="Wolfsberg Group" style="width:90;height:60px;">
 	  </Link>	  
@@ -90,20 +85,17 @@
 		<span class="navbar-toggler-icon"></span>
 	  </button>
 
-	  <div style="color:blue">
+<!-- 	  <div style="color:blue">
 		{#if $authenticated} 
 			Hello {$fullName}
 		{:else}
 			You are: not authenticated
 		{/if}
-	  </div>
+	  </div> -->
 
 	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 		  <li class="nav-item active">
-<!-- 			<a class="nav-link active" aria-current="page" href="/">
-				Home
-			</a> -->
 			<Link to={`/`} class="nav-link"> 
 				Home
 			</Link>
@@ -131,7 +123,7 @@
 			</a>
 			<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 			  <li>
-				<a class="dropdown-item" href="/#" data-cy="resetpwlink" on:click|preventDefault={()=>setResetPassword()}>
+				<a class="dropdown-item" href="/#" data-cy="resetpwlink" on:click|preventDefault={()=>onShowPopup(3)}>
 				    Change Password
 			    </a>
 			  </li>
@@ -149,13 +141,42 @@
 		<li class="nav-item">
 			<a class="nav-link disabled" href="/#" tabindex="-1" aria-disabled="true">Unknown</a>
 		  </li> -->
+		{:else}
+		<li class="nav-item dropdown">
+			<a class="nav-link dropdown-toggle" href="/#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+			  Guest
+			</a>
+			<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+			  <li>
+				<a class="nav-link" href="/#" data-cy="registerlink" on:click|preventDefault={()=>onShowPopup(2)}>
+					Register
+				</a>
+			  </li>
+			  <li>
+				<a class="nav-link" href="/#" data-cy="loginlink" on:click|preventDefault={()=>onShowPopup(1)}>
+					Login 
+				</a>
+			  </li>
+			  <li><hr class="dropdown-divider"></li>
+			  <li>
+				<a class="nav-link" href="/#" data-cy="resetpwlink" on:click|preventDefault={()=>onShowPopup(1)}>
+				<!-- <a class="nav-link" href="/#" data-cy="resetpwlink" on:click|preventDefault={()=>setResetPassword()}> -->
+					Forgot Password
+				</a>
+			  </li>
+			</ul>
+		  </li> 
+
+
+
+
 		{/if}
 
-<!-- 		  <li class="nav-item">
-			<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-		  </li>  -->
+		  <li class="nav-item">
+			<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</a>
+		  </li> 
 
- 		  {#if $authenticated == false} 
+<!--  		  {#if $authenticated == false} 
 			<li class="nav-item">
 				<a class="nav-link" href="/#" data-cy="registerlink" on:click|preventDefault={()=>onShowPopup(2)}>
 					Register
@@ -168,7 +189,6 @@
 			</li>
 		  {:else}
 			<li class="nav-item">
-				<!-- <a href="/#" class="nav-link" data-cy="resetlink" on:click|preventDefault={()=>onShowPopup(3)}> -->
 				<a class="nav-link" href="/#" data-cy="resetpwlink" on:click|preventDefault={()=>setResetPassword()}>
 					Reset Password
 				</a>
@@ -179,7 +199,7 @@
 				</a>
 			</li>
 	  
-	  	  {/if}
+	  	  {/if} -->
 
 
 
@@ -196,4 +216,4 @@
 	
 <RegisterModal open={showPopupRegister} onClosed={(data) => onPopupClose(2)}/>
 	
-<!-- <ResetPWModal open={showPopupResetPW} onClosed={(data) => onPopupClose(3)}/> -->
+<ChangePWModal open={showPopUpChangePW} onClosed={(data) => onPopupClose(3)}/> 

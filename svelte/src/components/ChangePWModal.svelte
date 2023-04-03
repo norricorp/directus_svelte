@@ -1,7 +1,7 @@
 <script>
   import { useParams } from "svelte-navigator";
   import { getContext } from 'svelte';
-  import { authToken, userId, emailName, authenticated, fullName } from '../stores'
+  import { authToken, userId, emailName, authenticated, fullName, refreshToken } from '../stores'
   import { directus } from "../services/directus";
 
   import { fade, fly } from "svelte/transition";
@@ -10,7 +10,6 @@
   export let open = false;
   export let showBackdrop = true;
   export let onClosed;
-  export let token;
   
   const modalClose = (data) => {
 		open = false;
@@ -19,48 +18,65 @@
 		}
 	}
 
-//	let value;
 	let old_password = ""
 	let new_password = ""
+//	let stored_pw = ""
+//	let userResponse;
 
-	let userResponse;
 
-//	await directus.auth.password.reset('abc.def.ghi', 'n3w-p455w0rd');
-// await directus.auth.password.request('admin@example.com');
-// await directus.auth.password.request('admin@example.com', 'http://localhost:3000/resetpw');
-/* need to set value in .env file ${import.meta.env.VITE_DIRECTUS_URL}/resetpw
-use request to send email.
-add route to App to call page that calls modal resetpw
-get token and send to reset
+	const change_pw = async () => {
+/* 		await directus.users.me.read({
+			fields: ['password'],
+		}).then((data) => {
+			console.log(data.password)
+			stored_pw = data.password
+		})
 
-     */
-	console.log("ResetPWModal: token value is " + token);
+		await directus.utils.hash.verify(old_password, "$" + stored_pw)
+		.then((data) => {
+			if (data == true)  {
+				console.log("the old password is correct")
+			}
+		})
+		.catch((error) => {
+				window.alert('Invalid credentials ' + error);
+			}); */
 
-	const reset_pw = async () => {
-		await directus.auth.password
-			.reset( token, new_password )
-			.then(() => {
+			// can we get the settings for password policy?
+			// based on value authenticate new password
+			
+			await directus.auth.login({ email: $emailName, password: old_password })
+			.then((data) => {
 				$authenticated = true;
-				new_password = ""
+				$authToken = data.access_token
+				$refreshToken = data.refresh_token
 				old_password = ""
-				console.log("auth token is " + $authToken)
-				window.alert('Password successfully changed ');
+				console.log("change pw auth OK - auth token is " + $authToken)
 			})
 			.catch((error) => {
-				console.log("Failure url is " + $authToken)
 				window.alert('Invalid credentials ' + error);
-				console.log("Failure auth token is " + import.meta.env.VITE_DIRECTUS_URL + "/resetpw")
 				old_password = "";
 				new_password = "";
+//				$authenticated=false;
 			});
-/* 		if ($authenticated) {
-			userResponse = await directus.users.me.read()
-			$userId = userResponse.id
-			$fullName = userResponse.first_name + " " + userResponse.last_name
-			console.log(`first name is ${userResponse.first_name} and surname is ${userResponse.last_name}`)
-		} */
-		console.log("after directus call, authenticated is " + $authenticated)
-  }
+
+			if ($authenticated) {
+				await directus.users.me.update({ password: new_password })
+					.then(() => {
+						new_password = ""
+						old_password = ""
+						window.alert('Password successfully changed ');
+					})
+					.catch((error) => {
+						window.alert('change password ' + error);
+						old_password = "";
+						new_password = "";
+					});
+			}
+
+
+
+   }
 
 </script>
 
@@ -77,17 +93,17 @@ get token and send to reset
     <div class="modal-dialog" role="document" in:fly={{ y: -50, duration: 300 }} out:fly={{ y: -50, duration: 300, easing: quintOut }}>
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="sampleModalLabel">Reset Password {token}</h5>
+          <h5 class="modal-title" id="sampleModalLabel">Change Password </h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close" on:click={() => modalClose('close')}>
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-		<form on:submit|preventDefault="{reset_pw}"> 
+		<form on:submit|preventDefault="{change_pw}"> 
 		  <div class="modal-body">
-<!-- 			<div class="mb-3">
+ 			<div class="mb-3">
 				<label class="form-label" for="inputPassword">Old Password</label>
 				<input type="password" class="form-control" data-cy="oldlogin_password" name="old_passwd" bind:value="{old_password}" >
-		    </div>  -->
+		    </div>  
 			<div class="mb-3">
 				<label class="form-label" for="inputPassword">New Password</label>
 				<input type="password" class="form-control" data-cy="newlogin_password" name="new_passwd" bind:value="{new_password}" >
@@ -95,7 +111,7 @@ get token and send to reset
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" on:click={() => modalClose('close')}>Cancel</button>
-			<button type="submit" class="btn btn-primary" on:click={() => modalClose('save')} disabled={new_password =="" }>Reset</button>
+			<button type="submit" class="btn btn-primary" on:click={() => modalClose('save')} disabled={old_password == "" || new_password =="" }>Change</button>
 			
 		  </div>
 	  </form>

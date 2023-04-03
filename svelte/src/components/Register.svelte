@@ -45,8 +45,8 @@
 			console.log("created user " + email);
 			window.alert(firstname + " " + surname + " is registered");
 		})
-		.catch(() => {
-			window.alert('Could not add user');
+		.catch((error) => {
+			window.alert('Could not add user: ' + error);
 		});
 
 		let newUser = await directus_users.readByQuery({
@@ -55,7 +55,7 @@
 			},
 		});
 
-		console.log("return from read user " + JSON.stringify(newUser));
+		//console.log("return from read user " + JSON.stringify(newUser));
 
 		// @ts-ignore
 		console.log("json object " + newUser.data[0].id);
@@ -72,9 +72,9 @@
 		.then(() => {
 			console.log("Created notification for " + firstname);
 		})
-		.catch(() => {
-			window.alert('Could not create notification');
-			console.log("Could NOT created notification for " + firstname);
+		.catch((error) => {
+			window.alert('Could not create notification: ' + error);
+			console.log("Could NOT created notification for " + firstname + " because of " + error);
 		});
 
 		firstname = ""

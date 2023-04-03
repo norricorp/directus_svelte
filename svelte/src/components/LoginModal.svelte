@@ -24,11 +24,22 @@
 	let userResponse;
 
    
-    
+	async function setResetPassword() {
+		console.log("entered reset password." );
+		console.log("sending email to " + import.meta.env.VITE_SVELTE_URL )
+		if (email == "") {
+			window.alert("Please enter an email address");
+		}
+		else {
+			await directus.auth.password.request(email, import.meta.env.VITE_SVELTE_URL + "/resetpw");
+			window.alert('Email to reset your password sent to ' + email);
+			modalClose('close');
+		}
+	}
 
 	const handleLogin = async () => {
 		await directus.auth
-			.login({ email, password })
+			.login({ email:email, password: password })
 			.then((data) => {
 				$authenticated = true;
 				$emailName = email
@@ -69,7 +80,7 @@
     <div class="modal-dialog" role="document" in:fly={{ y: -50, duration: 300 }} out:fly={{ y: -50, duration: 300, easing: quintOut }}>
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="sampleModalLabel">Login</h5>
+          <h5 class="modal-title" id="sampleModalLabel">Login / Forgot Password</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close" on:click={() => modalClose('close')}>
             <span aria-hidden="true">&times;</span>
           </button>
@@ -87,10 +98,12 @@
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" on:click={() => modalClose('close')}>Cancel</button>
-			<button type="submit" class="btn btn-primary" on:click={() => modalClose('save')}>Sign in</button>
-			
+			<button type="submit" class="btn btn-primary" on:click={() => modalClose('save')}  disabled={password == "" || email =="" }>Sign in</button>
 		  </div>
 	  </form>
+	  <a href="/#" data-cy="resetpwlink" on:click|preventDefault={()=>setResetPassword()}>
+		Forgot Password
+	  </a>
       </div>
     </div>
   </div>

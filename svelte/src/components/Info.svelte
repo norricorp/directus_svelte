@@ -27,7 +27,6 @@
     });
 
     [first, second] = formattedArticles;
-    console.log("first article is " + JSON.stringify(first));
      
   }
 
