@@ -1,5 +1,5 @@
 <script>
-  import { Link } from "svelte-navigator";
+  import { Link, navigate  } from "svelte-navigator";
   import { getAssetURL } from "../utils/get-asset-url";
 //  import Modal,{getModal} from './Modal.svelte';
 //  import LoginDialog from './LoginDialog.svelte';
@@ -15,6 +15,9 @@
 	let showPopupLogin = false;
 	let showPopupRegister = false;
 	let showPopUpChangePW = false;
+	let showPopUpTestPW = false;
+
+		const directus_settings = directus.items('directus_settings');
 
 	function onShowPopup(popup) {
 		switch (popup) {
@@ -43,7 +46,7 @@
  		case 3:
 			showPopUpChangePW = false;
 			break; 
-	default:
+		default:
 			console.log("Something gone wrong with popup close selection " + popup);
 		}
 	}	
@@ -54,14 +57,35 @@
 	}
 
 	async function setLogout() {
-		console.log("entered logout. authToken is " + $authToken);
-		await directus.auth.logout();
-		$authenticated = false;
-		$emailName = "";
-		$authToken = "";
-		$userId = 0;
-		$fullName = "";
-		location.replace("/");   
+
+/*  		await directus.auth
+		.refresh()
+		.then((data) => {
+			console.log("the refresh token is " + JSON.stringify(data))
+		})
+		.catch((error) => {
+			console.log("logout refresh error " + error)
+		}); 
+ */
+/* 		const xyz = await directus.auth.token
+		console.log("logout the auth token is  " + JSON.stringify(xyz) + " and store is " + $authToken) */
+
+
+		await directus.auth.logout().
+			then(() => {
+				console.log("logout OK - auth token is " + $authToken)
+				$authenticated = false;
+				$emailName = "";
+				$authToken = "";
+				$userId = 0;
+				$fullName = "";
+				navigate("/");
+	//			location.replace("/");   
+			})
+			.catch((error) => {
+				console.log("Logout error " + error)
+			});
+
 	}
 
 	async function setResetPassword() {
@@ -71,7 +95,20 @@
 		window.alert('Email to reset your password sent to ' + $emailName);
 	}
 
-	
+	async function getSettings() {
+		await directus_settings.readByQuery({
+      		fields: ["auth_password_policy", "project_name"],
+   		 }).then((data) => {
+			// @ts-ignore
+			console.log("password policy is " + data.data.auth_password_policy);
+			// @ts-ignore
+			console.log("project name is " + data.data.project_name);
+			console.log("data object is " + JSON.stringify(data))
+		})
+		.catch((error) => {
+			window.alert('Could not get settings ' + error);
+		});
+	}	
 
 </script>
 
@@ -127,7 +164,10 @@
 				    Change Password
 			    </a>
 			  </li>
-			  <li><a class="dropdown-item" href="/#">Another action</a>
+			  <li>
+				<a class="dropdown-item" href="/#" on:click|preventDefault={()=>getSettings()}>
+				    Another action
+			    </a>
 			  </li>
 			  <li><hr class="dropdown-divider"></li>
 			  <li>
@@ -166,43 +206,11 @@
 			  </li>
 			</ul>
 		  </li> 
-
-
-
-
 		{/if}
 
 		  <li class="nav-item">
-			<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</a>
+			<a class="nav-link disabled" href="/#" tabindex="-1" aria-disabled="true">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</a>
 		  </li> 
-
-<!--  		  {#if $authenticated == false} 
-			<li class="nav-item">
-				<a class="nav-link" href="/#" data-cy="registerlink" on:click|preventDefault={()=>onShowPopup(2)}>
-					Register
-				</a>
-			</li>
- 			<li class="nav-item">
-				<a class="nav-link" href="/#" data-cy="loginlink" on:click|preventDefault={()=>onShowPopup(1)}>
-					Login 
-				</a>
-			</li>
-		  {:else}
-			<li class="nav-item">
-				<a class="nav-link" href="/#" data-cy="resetpwlink" on:click|preventDefault={()=>setResetPassword()}>
-					Reset Password
-				</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/#" data-cy="logoutlink" on:click|preventDefault={()=>setLogout()}>
-					Logout
-				</a>
-			</li>
-	  
-	  	  {/if} -->
-
-
-
 		</ul>
 
 	  </div>
@@ -217,3 +225,5 @@
 <RegisterModal open={showPopupRegister} onClosed={(data) => onPopupClose(2)}/>
 	
 <ChangePWModal open={showPopUpChangePW} onClosed={(data) => onPopupClose(3)}/> 
+
+

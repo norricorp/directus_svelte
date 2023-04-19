@@ -2,6 +2,7 @@
 
 //  import { authToken, userId, emailName, authenticated, fullName } from '../stores'
   import { directus } from "../services/directus";
+  import { validatePW, getSetting} from "../utils/validate-pw";
 
   import { fade, fly } from "svelte/transition";
   import { quintOut } from "svelte/easing";
@@ -12,14 +13,25 @@
   
 	const modalClose = (data) => {
 		open = false;
+		console.log("Register: value of modal is " + data);
+		if (data == "close") {
+			console.log("register: pressed cancel")
+			firstname = ""
+			surname = ""
+			email = ""
+			password = ""
+		}
 		if (onClosed) {
 			onClosed(data);
 		}
 	}
 
-	let adminID = "500ca554-58d3-4d6f-9482-ee4b2be5090d";
+	let adminID = import.meta.env.VITE_DIRECTUS_ADMINID;
 
-
+	let pw_pattern = null;
+	
+	let pw_strength_message = "";
+	let pw_strength_ok = false;
 	
 
 	let firstname = ""
@@ -33,6 +45,16 @@
 	let show_password = false
 	$: type = show_password ? 'text' : 'password'
 	
+	$: {
+		console.log("Register reactivity: and now pw_pattern is " + pw_pattern)
+		if (pw_pattern != null) {
+			let {messageStr, resultBool} = validatePW(pw_pattern, password)
+			console.log("message is: " + messageStr);
+			console.log("password strength is " + resultBool);		
+			pw_strength_message = messageStr;
+			pw_strength_ok = resultBool;
+		}
+	}
 		
 	function onInput (event) {
 		password = event.target.value
@@ -55,24 +77,24 @@
 		.then(() => {
 			console.log("created user " + email);
 			window.alert(firstname + " " + surname + " is registered");
-		})
-		.catch(() => {
-			window.alert('Could not add user');
-		});
+			firstname = ""
+			surname = ""
+			email = ""
+			password = ""
+			eventStore.target.value = ""	
 
-		let newUser = await directus_users.readByQuery({
-			filter: {
-				email: email,
-			},
-		});
+			let newUser = directus_users.readByQuery({
+				filter: {
+					email: email,
+				},
+			});
 
-		console.log("return from read user " + JSON.stringify(newUser));
+			console.log("return from read user " + JSON.stringify(newUser));
 
-		// @ts-ignore
-		console.log("json object " + newUser.data[0].id);
+			// @ts-ignore
+			console.log("json object " + newUser.data[0].id);
 
-
-		await directus_notifications.createOne({
+			directus_notifications.createOne({
 				"recipient": adminID,
 				"subject": email + " requires approval of Registration",
 				"message": "\nHello admin@example.com,\nA new user has registered. He is " + firstname + " " + surname + 
@@ -80,20 +102,31 @@
 				"\n\n<a href=\"http://localhost:8055/admin/users/" + newUser.data[0].id + "\">Click here to view.</a>\n",
 				"collection": "directus_users",
 			})
-		.then(() => {
-			console.log("Created notification for " + firstname);
+			.then(() => {
+				console.log("Created notification for " + firstname);
+
+			})
+			.catch(() => {
+				window.alert('Could not create notification');
+				console.log("Could NOT created notification for " + firstname);
+			});
+
+			modalClose('save');
 		})
 		.catch(() => {
-			window.alert('Could not create notification');
-			console.log("Could NOT created notification for " + firstname);
+			window.alert('Could not add user');
 		});
-
-		firstname = ""
-		surname = ""
-		email = ""
-		password = ""
-		eventStore.target.value = ""
     }
+
+	async function pw_validate() {
+		console.log("into pw_validate ")
+		pw_pattern = await getSetting();
+		console.log("Register: getSetting returned " + pw_pattern)
+ 		if (pw_pattern == "error") {		
+			modalClose('close');
+		} 
+	};
+
 
 </script>
 
@@ -106,6 +139,7 @@
 
 <!-- Modal -->
 {#if open}
+{pw_validate()}
   <div class="modal" id="sampleModal" tabindex="-1" role="dialog" aria-labelledby="sampleModalLabel" aria-hidden={false}>
     <div class="modal-dialog" role="document" in:fly={{ y: -50, duration: 300 }} out:fly={{ y: -50, duration: 300, easing: quintOut }}>
       <div class="modal-content">
@@ -136,11 +170,13 @@
 					<button class="btn btn-outline-secondary" type="button" on:click="{ () => show_password = !show_password }">{show_password ? 'Hide' : 'Show'}</button>
 				</div>
 		    </div>
+			<div style="color:blue">{pw_strength_message}</div>        
 		  </div>
 		  
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" on:click={() => modalClose('close')}>Cancel</button>
-			<button type="submit" class="btn btn-primary" on:click={() => modalClose('save')} disabled={password == "" || email =="" || firstname == "" || surname == ""} >Register</button>
+			<!-- <button type="submit" class="btn btn-primary" on:click={() => modalClose('save')} disabled={password == "" || email =="" || firstname == "" || surname == ""} >Register</button> -->
+			<button type="submit" class="btn btn-primary" disabled={pw_strength_ok == false || email =="" || firstname == "" || surname == ""} >Register</button>
 		</div>
 	  </form>
       </div>

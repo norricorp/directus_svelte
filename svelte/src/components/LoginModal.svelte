@@ -12,6 +12,10 @@
   
 	const modalClose = (data) => {
 		open = false;
+		if (data == "close") {
+			email = ""
+			password = ""
+		}
 		if (onClosed) {
 			onClosed(data);
 		}
@@ -41,14 +45,14 @@
 		await directus.auth
 			.login({ email:email, password: password })
 			.then((data) => {
+				console.log("object returned from login is " + JSON.stringify(data))
 				$authenticated = true;
 				$emailName = email
 //				$authToken = directus.auth.token
 				$authToken = data.access_token
-				$refreshToken = data.refresh_token
+//				$refreshToken = data.refresh_token
 				email = ""
 				password = ""
-				console.log("auth token is " + $authToken)
 			})
 			.catch((error) => {
 				window.alert('Invalid credentials ' + error);
@@ -61,6 +65,7 @@
 			$userId = userResponse.id
 			$fullName = userResponse.first_name + " " + userResponse.last_name
 			console.log(`first name is ${userResponse.first_name} and surname is ${userResponse.last_name}`)
+			modalClose('close');
 		}
 		console.log("after directus call, authenticated is " + $authenticated)
   }
@@ -98,7 +103,8 @@
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" on:click={() => modalClose('close')}>Cancel</button>
-			<button type="submit" class="btn btn-primary" on:click={() => modalClose('save')}  disabled={password == "" || email =="" }>Sign in</button>
+			<!-- <button type="submit" class="btn btn-primary" on:click={() => modalClose('save')}  disabled={password == "" || email =="" }>Sign in</button> -->
+			<button type="submit" class="btn btn-primary" disabled={password == "" || email =="" }>Sign in</button>
 		  </div>
 	  </form>
 	  <a href="/#" data-cy="resetpwlink" on:click|preventDefault={()=>setResetPassword()}>

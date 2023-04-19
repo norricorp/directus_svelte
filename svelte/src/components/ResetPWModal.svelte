@@ -3,6 +3,7 @@
   import { getContext } from 'svelte';
   import { authToken, userId, emailName, authenticated, fullName } from '../stores'
   import { directus } from "../services/directus";
+  import { validatePW, getSetting} from "../utils/validate-pw";
 
   import { fade, fly } from "svelte/transition";
   import { quintOut } from "svelte/easing";
@@ -23,17 +24,35 @@
 	let old_password = ""
 	let new_password = ""
 
-	let userResponse;
+	let pw_pattern = null;
+	
+	let pw_strength_message = "";
+	let pw_strength_ok = false;
 
-//	await directus.auth.password.reset('abc.def.ghi', 'n3w-p455w0rd');
-// await directus.auth.password.request('admin@example.com');
-// await directus.auth.password.request('admin@example.com', 'http://localhost:3000/resetpw');
-/* need to set value in .env file ${import.meta.env.VITE_DIRECTUS_URL}/resetpw
-use request to send email.
-add route to App to call page that calls modal resetpw
-get token and send to reset
+	$: {
+		console.log("ResetPW reactivity: and now pw_pattern is " + pw_pattern)
+		if (pw_pattern != null) {
+			let {messageStr, resultBool} = validatePW(pw_pattern, new_password)
+			console.log("message is: " + messageStr);
+			console.log("password strength is " + resultBool);		
+			pw_strength_message = messageStr;
+			pw_strength_ok = resultBool;
+		}
+	}
 
-     */
+	async function pw_validate() {
+		console.log("into pw_validate ")
+		pw_pattern = await getSetting();
+		console.log("getSetting returned " + pw_pattern)
+ 		if (pw_pattern == "error") {
+			
+			modalClose('close');
+		} 
+
+	};
+	
+
+
 	console.log("ResetPWModal: token value is " + token);
 
 	const reset_pw = async () => {
@@ -53,12 +72,8 @@ get token and send to reset
 				old_password = "";
 				new_password = "";
 			});
-/* 		if ($authenticated) {
-			userResponse = await directus.users.me.read()
-			$userId = userResponse.id
-			$fullName = userResponse.first_name + " " + userResponse.last_name
-			console.log(`first name is ${userResponse.first_name} and surname is ${userResponse.last_name}`)
-		} */
+
+			
 		console.log("after directus call, authenticated is " + $authenticated)
   }
 
@@ -73,6 +88,7 @@ get token and send to reset
 
 <!-- Modal -->
 {#if open}
+{pw_validate()}
   <div class="modal" id="sampleModal" tabindex="-1" role="dialog" aria-labelledby="sampleModalLabel" aria-hidden={false}>
     <div class="modal-dialog" role="document" in:fly={{ y: -50, duration: 300 }} out:fly={{ y: -50, duration: 300, easing: quintOut }}>
       <div class="modal-content">
@@ -91,12 +107,12 @@ get token and send to reset
 			<div class="mb-3">
 				<label class="form-label" for="inputPassword">New Password</label>
 				<input type="password" class="form-control" data-cy="newlogin_password" name="new_passwd" bind:value="{new_password}" >
-		    </div>        
+		    </div>    
+			<div style="color:blue">{pw_strength_message}</div>        
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" on:click={() => modalClose('close')}>Cancel</button>
 			<button type="submit" class="btn btn-primary" on:click={() => modalClose('save')} disabled={new_password =="" }>Reset</button>
-			
 		  </div>
 	  </form>
       </div>
