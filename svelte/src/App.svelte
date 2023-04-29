@@ -9,7 +9,6 @@
   import Article from "./routes/Article.svelte";
   import Coverpage from "./routes/Coverpage.svelte";
   import NotFound from "./routes/NotFound.svelte";
-  import Fred from "./routes/Fred.svelte";
 
   import { authenticated} from './stores'
 
@@ -27,10 +26,8 @@
         <Coverpage/>
         <Info infoMembers = {false}/> 
     </Route> 
-<!--     <Route path="/resetpw">
-      <Fred />
-    </Route>  -->
-     <Route path="/resetpw" >
+    <Route path="/resetpw" >
+      <Coverpage/>
       <ResetPW />
     </Route>  
     <Route path="/everyone" primary={false}>

@@ -1,5 +1,5 @@
 <script>
-  import { useParams } from "svelte-navigator";
+  import { navigate, useParams } from "svelte-navigator";
   import { getContext } from 'svelte';
   import { authToken, userId, emailName, authenticated, fullName } from '../stores'
   import { directus } from "../services/directus";
@@ -41,7 +41,7 @@
 	}
 
 	async function pw_validate() {
-		console.log("into pw_validate ")
+		console.log("ResetPW: into pw_validate ")
 		pw_pattern = await getSetting();
 		console.log("getSetting returned " + pw_pattern)
  		if (pw_pattern == "error") {
@@ -59,7 +59,7 @@
 		await directus.auth.password
 			.reset( token, new_password )
 			.then(() => {
-				$authenticated = true;
+				$authenticated = false;
 				new_password = ""
 				old_password = ""
 				console.log("auth token is " + $authToken)
@@ -74,7 +74,8 @@
 			});
 
 			
-		console.log("after directus call, authenticated is " + $authenticated)
+		console.log("after directus call, authenticated is " + $authenticated);
+		navigate("/");
   }
 
 </script>
@@ -93,8 +94,9 @@
     <div class="modal-dialog" role="document" in:fly={{ y: -50, duration: 300 }} out:fly={{ y: -50, duration: 300, easing: quintOut }}>
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="sampleModalLabel">Reset Password {token}</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close" on:click={() => modalClose('close')}>
+          <!-- <h5 class="modal-title" id="sampleModalLabel">Reset Password {token}</h5> -->
+          <h5 class="modal-title" id="sampleModalLabel">Reset Password</h5>
+         <button type="button" class="close" data-dismiss="modal" aria-label="Close" on:click={() => modalClose('close')}>
             <span aria-hidden="true">&times;</span>
           </button>
         </div>

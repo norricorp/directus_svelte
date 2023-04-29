@@ -65,7 +65,7 @@ export function validatePW(pw_pattern, new_password) {
       .catch((error) => {
           pw_pattern = "error";
           console.log("getSettings: something gone wrong: " + error)
-          window.alert('Could not get pw settings ' + error);
+          window.alert('Could not get pw pattern settings ' + error);
       });
       console.log("getSetting returning " + pw_pattern)
       return pw_pattern;

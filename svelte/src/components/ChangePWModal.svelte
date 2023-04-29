@@ -75,7 +75,7 @@
   
 	 
 	  async function pw_validate() {
-		console.log("into pw_validate ")
+		console.log("ChangePW: into pw_validate ")
 		pw_pattern = await getSetting();
 		console.log("ChangePW: getSetting returned " + pw_pattern)
 		if (pw_pattern == "error") {
