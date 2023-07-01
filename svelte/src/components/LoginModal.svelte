@@ -62,7 +62,7 @@
 			});
 		if ($authenticated) {
 			userResponse = await directus.users.me.read()
-			$userId = userResponse.id
+	//		$userId = userResponse.id
 			$fullName = userResponse.first_name + " " + userResponse.last_name
 			console.log(`first name is ${userResponse.first_name} and surname is ${userResponse.last_name}`)
 			modalClose('close');
