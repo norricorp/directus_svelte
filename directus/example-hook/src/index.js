@@ -1,6 +1,10 @@
-export default ({ filter, action }, { exceptions }) => {
+import { createError } from '@directus/errors';
 
-	const { InvalidPayloadException } = exceptions;
+
+const InvalidPayloadException = createError('ELSEWHERE_SOURCE', 
+											'This has come from elsewhere');
+
+export default ({ filter, action }) => {
 
 	filter('users.create', (input, { collection }, { database, schema, accountability }) => {
 		console.log('filter input object for user create is ' + JSON.stringify(input));
