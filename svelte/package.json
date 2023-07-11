@@ -16,9 +16,9 @@
     "svelte-navigator": "^3.1.6"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "1.0.0-next.49",
+    "@sveltejs/vite-plugin-svelte": "^2.4.1",
     "cypress": "^12.3.0",
-    "svelte": "^3.49.0",
+    "svelte": "^4.0.0",
     "svelte-paginate": "^0.1.0",
     "svelte-time": "^0.7.1",
     "vite": "^2.9.13"
