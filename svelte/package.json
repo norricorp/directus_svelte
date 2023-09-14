@@ -22,5 +22,10 @@
     "svelte-paginate": "^0.1.0",
     "svelte-time": "^0.7.1",
     "vite": "^2.9.13"
+  },
+  "overrides": {
+    "svelte-navigator": {
+      "svelte": ">=4.x"
+    }
   }
 }
