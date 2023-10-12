@@ -1,0 +1,25 @@
+{
+	"name": "sveltekit",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@directus/sdk": "^10.3.3",
+		"gh-pages": "^4.0.0",
+		"modern-normalize": "^1.1.0"	  },
+	"devDependencies": {
+		"@sveltejs/vite-plugin-svelte": "^2.4.1",
+		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/kit": "^1.20.4",
+		"svelte": "^4.0.5",
+		"svelte-paginate": "^0.1.0",
+		"svelte-time": "^0.7.1",
+		"vite": "^4.4.2"
+	},
+	"type": "module"
+}
+
