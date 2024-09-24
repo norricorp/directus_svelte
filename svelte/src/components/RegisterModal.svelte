@@ -1,7 +1,8 @@
 <script>
 
 //  import { authToken, userId, emailName, authenticated, fullName } from '../stores'
-  import { directus } from "../services/directus";
+  import { getDirectusInstance } from "../services/directus";
+  import { readItems, createUser, readUsers, createNotification } from '@directus/sdk';
   import { validatePW, getSetting} from "../utils/validate-pw";
 
   import { fade, fly } from "svelte/transition";
@@ -61,19 +62,21 @@
 		eventStore = event
 	}
     
-	const directus_users = directus.items('directus_users');
-	const directus_notifications = directus.items('directus_notifications');
+	const directus = getDirectusInstance(fetch);
+//	const directus_users = directus.request(readItems('directus_users'));
+//	const directus_notifications = directus.request(readItems('directus_notifications'));
 
 	const register = async () => {
 
-		await directus_users.createOne({
+		await directus.request(createUser({
 			first_name: firstname,
 			last_name: surname,
 			password: password,
 			email: email,
+			// @ts-ignore
 			fred: true,
 			status: "invited",
-		})
+		}))
 		.then(() => {
 			console.log("created user " + email);
 			window.alert(firstname + " " + surname + " is registered");
@@ -83,28 +86,27 @@
 			password = ""
 			eventStore.target.value = ""	
 
-			let newUser = directus_users.readByQuery({
+			let newUser = directus.request(readUsers({
 				filter: {
 					email: email,
 				},
-			});
-
+			}));
+			
 			console.log("return from read user " + JSON.stringify(newUser));
 
 			// @ts-ignore
 			console.log("json object " + newUser.data[0].id);
 
-			directus_notifications.createOne({
+			directus.request(createNotification({
 				"recipient": adminID,
 				"subject": email + " requires approval of Registration",
 				"message": "\nHello admin@example.com,\nA new user has registered. He is " + firstname + " " + surname + 
 				// @ts-ignore
 				"\n\n<a href=\"http://localhost:8055/admin/users/" + newUser.data[0].id + "\">Click here to view.</a>\n",
 				"collection": "directus_users",
-			})
+			}))
 			.then(() => {
 				console.log("Created notification for " + firstname);
-
 			})
 			.catch(() => {
 				window.alert('Could not create notification');

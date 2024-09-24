@@ -6,6 +6,11 @@ Admin credentials for this Directus instance:
 
 - **Email** — `admin@example.com`
 - **Password** — `d1r3ctu5`
+
+Also
+		johnny@email.com	'87654321' (can use app but no admin rights)
+		john@norricorp.f9.co.uk '12345678' (can use app but no admin rights)
+		maria@email.com '12345678' (can't use app as not in role 'anyone')
   
 ## 📌 Prerequisites
 

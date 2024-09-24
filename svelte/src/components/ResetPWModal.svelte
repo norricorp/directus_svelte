@@ -2,7 +2,8 @@
   import { navigate, useParams } from "svelte-navigator";
   import { getContext } from 'svelte';
   import { authToken, userId, emailName, authenticated, fullName } from '../stores'
-  import { directus } from "../services/directus";
+  import { getDirectusInstance } from "../services/directus";
+  import { passwordReset } from '@directus/sdk';
   import { validatePW, getSetting} from "../utils/validate-pw";
 
   import { fade, fly } from "svelte/transition";
@@ -51,13 +52,12 @@
 
 	};
 	
-
+	const directus = getDirectusInstance();
 
 	console.log("ResetPWModal: token value is " + token);
 
 	const reset_pw = async () => {
-		await directus.auth.password
-			.reset( token, new_password )
+		await directus.request(passwordReset( token, new_password ))
 			.then(() => {
 				$authenticated = false;
 				new_password = ""

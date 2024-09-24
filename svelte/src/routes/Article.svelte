@@ -1,6 +1,7 @@
 <script>
   import { Link, navigate, useLocation, useParams } from "svelte-navigator";
-  import { directus } from "../services/directus";
+  import { getDirectusInstance } from "../services/directus";
+  import { readItem, readItems } from '@directus/sdk';
   import { getAssetURL } from "../utils/get-asset-url";
   import { formatRelativeTime } from "../../../shared/utils/format-relative-time";
 
@@ -26,10 +27,12 @@
   async function fetchData() {
     let articleResponse;
 
+    const directus = getDirectusInstance(fetch);
+
     try {
-      articleResponse = await directus.items("articles").readOne(id, {
+      articleResponse = await directus.request(readItem('articles', id, {
         fields: ["*", "author.avatar", "author.first_name", "author.last_name", "fred"],
-      });
+      }));
 
       const formattedArticle = {
         ...articleResponse,
@@ -39,7 +42,7 @@
         ),
       };
 
-      const moreArticlesResponse = await directus.items("articles").readByQuery({
+      const moreArticlesResponse = await directus.request(readItems('articles',{
         fields: ["*", "author.avatar", "author.first_name", "author.last_name", "fred"],
         filter: {
           _and: [
@@ -51,8 +54,8 @@
           ],
         },
         limit: 2,
-      });
-      const formattedMoreArticles = moreArticlesResponse.data.map(
+      }));
+      const formattedMoreArticles = moreArticlesResponse.map(
         (moreArticle) => {
           return {
             ...moreArticle,

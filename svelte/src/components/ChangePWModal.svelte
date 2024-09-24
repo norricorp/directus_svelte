@@ -1,6 +1,7 @@
 <script>
 	import { authToken, userId, emailName, authenticated, fullName, refreshToken } from '../stores'
-	import { directus } from "../services/directus";
+	import { getDirectusInstance } from "../services/directus";
+	import { authentication, rest, login, readMe, passwordRequest, updateMe } from '@directus/sdk';
 	import { validatePW, getSetting} from "../utils/validate-pw";
   
 	import { fade, fly } from "svelte/transition";
@@ -28,6 +29,8 @@
 	  
 	  let pw_strength_message = "";
 	  let pw_strength_ok = false;
+
+	  const directus = getDirectusInstance();
   
 	  $: {
 		  console.log("changePW reactivity: and now pw_pattern is " + pw_pattern)
@@ -41,7 +44,7 @@
 	  }
   
 	  const change_pw = async () => {
-			  await directus.auth.login({ email: $emailName, password: old_password })
+			  await directus.login($emailName, old_password)
 			  .then((data) => {
 				  $authenticated = true;
 				  $authToken = data.access_token
@@ -58,7 +61,7 @@
   
 			  if ($authenticated) {
   
-				  await directus.users.me.update({ password: new_password })
+				  await directus.request(updateMe({ password: new_password }))
 					  .then(() => {
 						  new_password = ""
 						  old_password = ""
