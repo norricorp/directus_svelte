@@ -4,7 +4,9 @@
 //  import Modal,{getModal} from './Modal.svelte';
 //  import LoginDialog from './LoginDialog.svelte';
 //  import Register from './Register.svelte';
-  import { directus } from "../services/directus";
+  import { getDirectusInstance } from "../services/directus";
+  import { passwordRequest, logout, readSettings } from '@directus/sdk';
+
   import { authToken, userId, emailName, authenticated, fullName, refreshToken} from '../stores'
 
   import LoginModal from "./LoginModal.svelte";
@@ -17,8 +19,8 @@
 	let showPopUpChangePW = false;
 	let showPopUpTestPW = false;
 
-		const directus_settings = directus.items('directus_settings');
-
+	const directus = getDirectusInstance();
+	
 	function onShowPopup(popup) {
 		switch (popup) {
 		case 1:
@@ -58,32 +60,23 @@
 
 	async function setLogout() {
 
-/*  		await directus.auth
-		.refresh()
-		.then((data) => {
-			console.log("the refresh token is " + JSON.stringify(data))
-		})
-		.catch((error) => {
-			console.log("logout refresh error " + error)
-		}); 
- */
-/* 		const xyz = await directus.auth.token
-		console.log("logout the auth token is  " + JSON.stringify(xyz) + " and store is " + $authToken) */
-
-
-		await directus.auth.logout().
-			then(() => {
+		console.log("logout: refresh token is " + $refreshToken);
+		await directus.logout()
+		// json required for this method to work despite docs
+//		await directus.request(logout($refreshToken, 'json'))
+			.then(() => {
 				console.log("logout OK - auth token is " + $authToken)
 				$authenticated = false;
 				$emailName = "";
 				$authToken = "";
+				$refreshToken = "";
 				$userId = 0;
 				$fullName = "";
 				navigate("/");
 	//			location.replace("/");   
 			})
 			.catch((error) => {
-				console.log("Logout error " + error)
+				console.log("Logout error " + JSON.stringify(error));
 			});
 
 	}
@@ -91,14 +84,14 @@
 	async function setResetPassword() {
 		console.log("entered reset password. " );
 		console.log("the destination url is " + import.meta.env.VITE_SVELTE_URL )
-		await directus.auth.password.request($emailName, import.meta.env.VITE_SVELTE_URL + "/resetpw");
+		await directus.request(passwordRequest($emailName, import.meta.env.VITE_SVELTE_URL + "/resetpw"));
 		window.alert('Email to reset your password sent to ' + $emailName);
 	}
 
 	async function getSettings() {
-		await directus_settings.readByQuery({
+		await directus.request(readSettings(  {
       		fields: ["auth_password_policy", "project_name"],
-   		 }).then((data) => {
+   		 })).then((data) => {
 			// @ts-ignore
 			console.log("password policy is " + data.data.auth_password_policy);
 			// @ts-ignore

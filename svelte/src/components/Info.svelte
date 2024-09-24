@@ -4,13 +4,17 @@
   import { Link } from "svelte-navigator";
   import Time, { svelteTime } from "svelte-time";
 	import { dayjs } from "svelte-time";
-  import { directus } from "../services/directus";
+  import { getDirectusInstance } from "../services/directus";
+  import { readItems } from '@directus/sdk';
  
   let first, second;
   export let infoMembers = false
    
   async function fetchData() {
-    const response = await directus.items("articles").readByQuery({
+
+    const directus = getDirectusInstance(fetch);
+
+    const response = await directus.request(readItems('articles',{
       fields: ["*", "fred"],
       filter: {
         membersOnly: infoMembers,
@@ -18,9 +22,9 @@
       limit: 2,
       // @ts-ignore
       sort: "-publish_date",
-    });
+    }));
 
-    const formattedArticles = response.data.map((article) => {
+    const formattedArticles = response.map((article) => {
       return {
         ...article,
       };

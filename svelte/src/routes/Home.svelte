@@ -4,7 +4,8 @@
   import { paginate, PaginationNav } from 'svelte-paginate'
   import Hero from "../components/Hero.svelte";
   import Article from "../components/Article.svelte";
-  import { directus } from "../services/directus";
+  import { getDirectusInstance } from "../services/directus";
+  import { readItems } from '@directus/sdk';
   import { formatRelativeTime } from "../../../shared/utils/format-relative-time";
 
   let hero, articles;
@@ -13,16 +14,18 @@
   let pageSize = 3
   
   async function fetchData() {
-    const response = await directus.items("articles").readByQuery({
+
+    const directus = getDirectusInstance(fetch);
+    const response = await directus.request(readItems("articles", {
       fields: ["*", "author.avatar", "author.first_name", "author.last_name", "fred"],
       filter: {
         membersOnly: members,
       },
       // @ts-ignore
       sort: "-publish_date",
-    });
+    }));
 
-    const formattedArticles = response.data.map((fred) => {
+    const formattedArticles = response.map((fred) => {
       return {
         ...fred,
         // @ts-ignore

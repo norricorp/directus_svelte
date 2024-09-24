@@ -7,4 +7,5 @@ export const userId = writable(0)
 export const emailName = writable('')
 export const authenticated = writable(false)
 export const fullName = writable('')
+export const directusAuth = writable({})
 

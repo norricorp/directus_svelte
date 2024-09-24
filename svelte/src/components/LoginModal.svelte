@@ -1,7 +1,8 @@
 <script>
   import { getContext } from 'svelte';
-  import { authToken, userId, emailName, authenticated, fullName, refreshToken } from '../stores'
-  import { directus } from "../services/directus";
+  import { authToken, userId, emailName, authenticated, fullName, refreshToken, directusAuth } from '../stores'
+  import { getDirectusInstance } from "../services/directus";
+  import { readMe, passwordRequest } from '@directus/sdk';
 
   import { fade, fly } from "svelte/transition";
   import { quintOut } from "svelte/easing";
@@ -27,6 +28,10 @@
 
 	let userResponse;
 
+	const directus = getDirectusInstance();
+	$directusAuth = directus;
+	console.log("Login: directus returned is " + JSON.stringify(directus));
+	console.log("Login: and drill in " + directus.url);
    
 	async function setResetPassword() {
 		console.log("entered reset password." );
@@ -35,24 +40,26 @@
 			window.alert("Please enter an email address");
 		}
 		else {
-			await directus.auth.password.request(email, import.meta.env.VITE_SVELTE_URL + "/resetpw");
+			await directus.request(passwordRequest(email, import.meta.env.VITE_SVELTE_URL + "/resetpw"));
 			window.alert('Email to reset your password sent to ' + email);
 			modalClose('close');
 		}
 	}
 
 	const handleLogin = async () => {
-		await directus.auth
-			.login({ email:email, password: password })
+		// mode required to get refreshToken returned despite docs
+		await directus.login(email, password, {	mode: 'json'})
 			.then((data) => {
 				console.log("object returned from login is " + JSON.stringify(data))
 				$authenticated = true;
 				$emailName = email
 //				$authToken = directus.auth.token
 				$authToken = data.access_token
-//				$refreshToken = data.refresh_token
+				$refreshToken = data.refresh_token
+	
 				email = ""
 				password = ""
+				console.log("assigned directus with: " + $directusAuth);
 			})
 			.catch((error) => {
 				window.alert('Invalid credentials ' + error);
@@ -61,7 +68,7 @@
 				email = "";
 			});
 		if ($authenticated) {
-			userResponse = await directus.users.me.read()
+			userResponse = await directus.request(readMe());
 	//		$userId = userResponse.id
 			$fullName = userResponse.first_name + " " + userResponse.last_name
 			console.log(`first name is ${userResponse.first_name} and surname is ${userResponse.last_name}`)

@@ -1,6 +1,7 @@
-import { directus } from "../services/directus";
+import { getDirectusInstance } from "../services/directus";
+import { readSettings } from '@directus/sdk';
 
-const directus_settings = directus.items('directus_settings');
+
 
 export function validatePW(pw_pattern, new_password) {
     let pw_strength_message = "";
@@ -48,9 +49,11 @@ export function validatePW(pw_pattern, new_password) {
 
     console.log("validate-pw: into getSettings ")
 
-    await directus_settings.readByQuery({
+    const directus = getDirectusInstance(fetch);
+
+    await directus.request(readSettings({
             fields: ["auth_password_policy", "project_name"],
-          }).then((data) => {
+          })).then((data) => {
           // @ts-ignore
           console.log("password policy is " + data.data.auth_password_policy);
           // @ts-ignore

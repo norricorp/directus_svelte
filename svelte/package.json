@@ -10,22 +10,17 @@
     "deploy": "node ./gh-pages.js"
   },
   "dependencies": {
-    "@directus/sdk": "^10.3.3",
+    "@directus/sdk": "^17.0.0",
     "gh-pages": "^4.0.0",
     "modern-normalize": "^1.1.0",
-    "svelte-navigator": "^3.1.6"
+    "svelte-navigator": "file:/temp/svelte-navigator-4.0.0.tgz"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^2.4.1",
+    "@sveltejs/vite-plugin-svelte": "^2.4.6",
     "cypress": "^12.3.0",
-    "svelte": "^4.0.0",
+    "svelte": "^4.2.0",
     "svelte-paginate": "^0.1.0",
     "svelte-time": "^0.7.1",
-    "vite": "^2.9.13"
-  },
-  "overrides": {
-    "svelte-navigator": {
-      "svelte": ">=4.x"
-    }
+    "vite": "^4.4.11"
   }
 }
